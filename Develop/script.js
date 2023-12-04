@@ -1,23 +1,68 @@
-// Wrap all code that interacts with the DOM in a call to jQuery to ensure that
-// the code isn't run until the browser has finished rendering all the elements
-// in the html.
-$(function () {
-  // TODO: Add a listener for click events on the save button. This code should
-  // use the id in the containing time-block as a key to save the user input in
-  // local storage. HINT: What does `this` reference in the click listener
-  // function? How can DOM traversal be used to get the "hour-x" id of the
-  // time-block containing the button that was clicked? How might the id be
-  // useful when saving the description in local storage?
-  //
-  // TODO: Add code to apply the past, present, or future class to each time
-  // block by comparing the id to the current hour. HINTS: How can the id
-  // attribute of each time-block be used to conditionally add or remove the
-  // past, present, and future classes? How can Day.js be used to get the
-  // current hour in 24-hour time?
-  //
-  // TODO: Add code to get any user input that was saved in localStorage and set
-  // the values of the corresponding textarea elements. HINT: How can the id
-  // attribute of each time-block be used to do this?
-  //
-  // TODO: Add code to display the current date in the header of the page.
+$(function() {
+  // Function to update time-block classes based on current hour
+  function updateTimeBlocks() {
+    // Get the current hour using Day.js
+    var currentHour = dayjs().hour();
+
+    // Loop through each time block
+    $('.time-block').each(function() {
+      // Extract the hour from the time-block id
+      // Converts the string from id and converts it into an integer
+      var blockHour = parseInt(this.id.split('-')[1]);
+
+      // Remove all classes from the time block
+      $(this).removeClass('past present future');
+
+      // Compares the blockhour with the currenthour and adds the proper class
+      if (blockHour < currentHour) {
+        $(this).addClass('past');
+      } else if (blockHour === currentHour) {
+        $(this).addClass('present');
+      } else {
+        $(this).addClass('future');
+      }
+    });
+  }
+
+  // Call updateTimeBlocks on page load
+  updateTimeBlocks();
+
+  // Update time blocks every minute
+  setInterval(updateTimeBlocks, 60000); // Update every minute
+
+  // Function to handle the save button click and local storage
+  $('.saveBtn').on('click', function() {
+    // Find the parent time-block of the clicked save button
+    var timeBlock = $(this).closest('.time-block');
+
+    // Get the ID of the time-block
+    var eventId = timeBlock.attr('id');
+
+    // Get the text from entered in the same time-block
+    var eventText = timeBlock.find('.description').val();
+
+    // Save the eventText to local storage using eventId as the key
+    localStorage.setItem(eventId, eventText);
+  });
+
+  // Function to retrieve saved events from local storage
+  function retrieveEvents() {
+    // Loop through each time-block
+    $('.time-block').each(function() {
+      // Get the ID of the time-block
+      var eventId = $(this).attr('id');
+
+      // Retrieve the saved eventText from local storage based on eventId
+      var savedEvent = localStorage.getItem(eventId);
+
+      // If a saved event exists, paste it
+      if (savedEvent !== null) {
+        $(this).find('.description').val(savedEvent);
+      }
+    });
+  }
+
+  // Call retrieveEvents on page load
+  retrieveEvents();
+  
 });
